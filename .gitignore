@@ -1,0 +1,7 @@
+data/
+data.csv
+grids/
+logs/
+__pycache__/
+*.pyc
+user_ips.log

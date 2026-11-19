@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script defer src="http://192.168.50.172:8083/script.js" data-website-id="cb0b404c-341d-4a47-8899-087d96b7e52a"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMR Road Chainage Mapper</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --bg-primary: #f5f5f5;
+            --bg-secondary: white;
+            --bg-tertiary: #ecf0f1;
+            --bg-header: #2c3e50;
+            --bg-info: #34495e;
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --text-white: white;
+            --border-color: #e0e0e0;
+            --shadow: rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3a3a3a;
+            --bg-header: #1e1e1e;
+            --bg-info: #2a2a2a;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --text-white: #f0f0f0;
+            --border-color: #404040;
+            --shadow: rgba(0,0,0,0.3);
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .header {
+            background-color: var(--bg-header);
+            color: var(--text-white);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .header-controls {
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .theme-toggle, .aerial-toggle {
+            background: none;
+            border: 2px solid var(--text-white);
+            color: var(--text-white);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .theme-toggle:hover, .aerial-toggle:hover {
+            background-color: var(--text-white);
+            color: var(--bg-header);
+        }
+
+        .speed-control {
+            position: absolute;
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-white);
+            font-size: 14px;
+        }
+
+        .speed-slider {
+            width: 120px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            outline: none;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .speed-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--text-white);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .speed-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: var(--text-white);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        #closest-point-info {
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px var(--shadow);
+            padding: 12px 16px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        #closest-point-info h3 {
+            margin: 0 0 8px 0;
+            color: var(--text-primary);
+            font-size: 16px;
+        }
+        
+        .road-info p {
+            margin: 4px 0;
+            font-size: 13px;
+            line-height: 1.3;
+            color: var(--text-primary);
+        }
+        
+        .road-info strong {
+            color: var(--text-primary);
+            min-width: 100px;
+            display: inline-block;
+        }
+        
+        .map-container {
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px var(--shadow);
+            overflow: hidden;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+        
+        #info {
+            background-color: var(--bg-info);
+            color: var(--text-white);
+            padding: 10px 20px;
+            font-size: 14px;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+        
+        .instructions {
+            background-color: var(--bg-tertiary);
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: var(--text-primary);
+            transition: background-color 0.3s ease;
+        }
+        
+        .disclaimer {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #856404;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+        
+        [data-theme="dark"] .disclaimer {
+            background-color: #2d2d1a;
+            border-color: #4d4d2a;
+            color: #e6d700;
+        }
+        
+        .no-data {
+            color: var(--text-secondary);
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            #map {
+                height: 400px;
+            }
+            
+            .road-info strong {
+                min-width: auto;
+                display: block;
+            }
+
+            .header-controls {
+                position: static;
+                transform: none;
+                justify-content: center;
+                margin-top: 15px;
+                flex-wrap: wrap;
+            }
+
+            .theme-toggle, .aerial-toggle {
+                margin: 5px;
+            }
+
+            .speed-control {
+                position: static;
+                transform: none;
+                justify-content: center;
+                margin-top: 10px;
+            }
+
+            .search-box {
+                max-width: 100%;
+            }
+            
+            .header {
+                padding: 15px;
+            }
+        }
+
+        /* Dark mode specific leaflet popup styles */
+        [data-theme="dark"] .leaflet-popup-content-wrapper {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        [data-theme="dark"] .leaflet-popup-tip {
+            background-color: var(--bg-secondary);
+        }
+
+        [data-theme="dark"] .leaflet-control-layers,
+        [data-theme="dark"] .leaflet-control-zoom {
+            background-color: var(--bg-secondary);
+            border-color: var(--border-color);
+        }
+
+        [data-theme="dark"] .leaflet-control-layers a,
+        [data-theme="dark"] .leaflet-control-zoom a {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        [data-theme="dark"] .leaflet-control-layers a:hover,
+        [data-theme="dark"] .leaflet-control-zoom a:hover {
+            background-color: var(--bg-tertiary);
+        }
+
+        /* Chainage label styling */
+        .chainage-label {
+            background: transparent !important;
+            border: none !important;
+        }
+
+        [data-theme="dark"] .chainage-label div {
+            background: rgba(45, 45, 45, 0.9) !important;
+            border: 2px solid #666 !important;
+            color: #e0e0e0 !important;
+        }
+
+        /* Closest point label styling */
+        .closest-chainage-label {
+            background: transparent !important;
+            border: none !important;
+        }
+
+        [data-theme="dark"] .closest-chainage-label div {
+            background: rgba(45, 45, 45, 0.95) !important;
+            border: 2px solid #4da6ff !important;
+            color: #4da6ff !important;
+        }
+
+        .chainage-toggle {
+            background: none;
+            border: 2px solid var(--text-white);
+            color: var(--text-white);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .chainage-toggle:hover {
+            background-color: var(--text-white);
+            color: var(--bg-header);
+        }
+
+        .chainage-toggle.active {
+            background-color: var(--text-white);
+            color: var(--bg-header);
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-size;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        .control-label {
+            margin-left: 10px;
+        }
+
+        .label-options {
+            margin-top: 10px;
+        }
+
+        .option-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+            cursor: pointer;
+            position: relative;
+            padding-left: 25px;
+            font-size: 14px;
+        }
+
+        .checkbox-label input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        .checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 18px;
+            width: 18px;
+            background-color: #eee;
+            border-radius: 3px;
+            border: 2px solid #ccc;
+        }
+
+        .checkbox-label:hover input ~ .checkmark {
+            background-color: #ccc;
+        }
+
+        .checkbox-label input:checked ~ .checkmark {
+            background-color: #2196F3;
+            border-color: #2196F3;
+        }
+
+        .checkbox-label input:checked ~ .checkmark:after {
+            display: block;
+        }
+
+        .checkbox-label .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+            left: 5px;
+            top: 2px;
+            width: 4px;
+            height: 8px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            padding: 0 20px;
+        }
+        
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        .search-box input {
+            border: none;
+            outline: none;
+            background: transparent;
+            padding: 8px 15px;
+            font-size: 14px;
+            width: 250px;
+            color: #333;
+        }
+        
+        .search-box input::placeholder {
+            color: #999;
+        }
+        
+        .search-box button {
+            background: #2196F3;
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        
+        .search-box button:hover {
+            background: #1976D2;
+        }
+        
+        .search-box button:active {
+            transform: scale(0.95);
+        }
+        
+        /* Dark mode search styling */
+        [data-theme="dark"] .search-box {
+            background: rgba(45, 45, 45, 0.95);
+        }
+        
+        [data-theme="dark"] .search-box input {
+            color: #e0e0e0;
+        }
+        
+        [data-theme="dark"] .search-box input::placeholder {
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="speed-control">
+            <span>Points:</span>
+            <input type="range" class="speed-slider" id="neighborSlider" min="1" max="200" step="1" value="100">
+            <span id="neighborValue">100</span>
+            <span style="margin-left: 20px;">
+                <label class="checkbox-label" style="margin: 0;">
+                    <input type="checkbox" id="linesToggle" checked>
+                    <span class="checkmark"></span>
+                    Lines
+                </label>
+            </span>
+        </div>
+        
+        <h1>TMR Road Chainage Mapper</h1>
+        <div class="header-controls">
+            <button class="aerial-toggle" onclick="toggleAerial()">🛰️ Aerial View</button>
+            <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div id="closest-point-info">
+            <div class="no-data">Click on the map to find the closest road point</div>
+        </div>
+        
+        <div class="map-container">
+            <div id="map"></div>
+            <div id="info">Loading map...</div>
+        </div>
+
+        <div class="instructions">
+            <strong>Instructions:</strong> Click anywhere on the map to find the closest TMR road points. The blue dot shows the closest road point with a solid blue connecting line. Other nearby points are shown with color-coded markers (green = closer, red = farther) and connecting lines with ripple animations. Click on any marker to see detailed information.
+        </div>
+        
+        <div class="disclaimer">
+            <strong>⚠️ Disclaimer:</strong> This tool provides road chainage data for reference purposes only. Users are advised to cross-check all data with official TMR sources before making any decisions or taking any actions based on this information. The accuracy and completeness of the data cannot be guaranteed.
+        </div>
+
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search for a city or address..." />
+                <button id="searchButton" onclick="searchLocation()">🔍</button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="switch">
+                <input type="checkbox" id="chainageToggle" checked>
+                <span class="slider round"></span>
+            </label>
+            <span class="control-label">Chainage Labels</span>
+        </div>
+        
+        <div class="control-group">
+            <label class="switch">
+                <input type="checkbox" id="labelTypeToggle" checked>
+                <span class="slider round"></span>
+            </label>
+            <span class="control-label">Label Types</span>
+        </div>
+        
+        <div class="label-options" id="labelOptions">
+            <div class="option-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="kmMarkersToggle" checked>
+                    <span class="checkmark"></span>
+                    1km Markers
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="closestPointToggle" checked>
+                    <span class="checkmark"></span>
+                    Closest Point
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="intervalToggle" checked>
+                    <span class="checkmark"></span>
+                    100m/250m
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="static/script.js"></script>
+</body>
+</html>
