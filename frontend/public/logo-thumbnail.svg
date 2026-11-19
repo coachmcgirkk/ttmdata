@@ -1,0 +1,46 @@
+<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e3a8a;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e40af;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="tGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e5e7eb;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="signalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="80" height="80" fill="url(#bgGradient)"/>
+  
+  <!-- GPS/Waypoint Circle -->
+  <circle cx="40" cy="40" r="25" fill="none" stroke="url(#signalGradient)" stroke-width="3" opacity="0.8"/>
+  
+  <!-- Signal Waves -->
+  <circle cx="40" cy="40" r="15" fill="none" stroke="url(#signalGradient)" stroke-width="2" opacity="0.6"/>
+  <circle cx="40" cy="40" r="35" fill="none" stroke="url(#signalGradient)" stroke-width="1" opacity="0.4"/>
+  
+  <!-- Stylized T -->
+  <g transform="translate(40, 40)">
+    <!-- Vertical bar of T -->
+    <rect x="-3" y="-20" width="6" height="25" rx="3" fill="url(#tGradient)"/>
+    <!-- Horizontal bar of T -->
+    <rect x="-15" y="-3" width="30" height="6" rx="3" fill="url(#tGradient)"/>
+  </g>
+  
+  <!-- GPS Dot in center -->
+  <circle cx="40" cy="40" r="3" fill="url(#signalGradient)"/>
+  
+  <!-- Small signal dots around the T -->
+  <circle cx="25" cy="25" r="2" fill="url(#signalGradient)" opacity="0.8"/>
+  <circle cx="55" cy="25" r="2" fill="url(#signalGradient)" opacity="0.8"/>
+  <circle cx="25" cy="55" r="2" fill="url(#signalGradient)" opacity="0.8"/>
+  <circle cx="55" cy="55" r="2" fill="url(#signalGradient)" opacity="0.8"/>
+</svg> 

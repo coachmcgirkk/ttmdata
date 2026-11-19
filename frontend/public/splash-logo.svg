@@ -1,0 +1,73 @@
+<svg width="800" height="200" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1e3a8a;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e40af;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="tGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e5e7eb;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="signalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="200" fill="url(#bgGradient)"/>
+  
+  <!-- GPS/Waypoint Circles -->
+  <circle cx="200" cy="100" r="60" fill="none" stroke="url(#signalGradient)" stroke-width="4" opacity="0.6"/>
+  <circle cx="200" cy="100" r="40" fill="none" stroke="url(#signalGradient)" stroke-width="3" opacity="0.8"/>
+  <circle cx="200" cy="100" r="20" fill="none" stroke="url(#signalGradient)" stroke-width="2" opacity="1"/>
+  
+  <!-- Signal Waves -->
+  <circle cx="200" cy="100" r="80" fill="none" stroke="url(#signalGradient)" stroke-width="2" opacity="0.4"/>
+  <circle cx="200" cy="100" r="100" fill="none" stroke="url(#signalGradient)" stroke-width="1" opacity="0.3"/>
+  
+  <!-- Large Stylized T -->
+  <g transform="translate(200, 100)">
+    <!-- Vertical bar of T -->
+    <rect x="-8" y="-50" width="16" height="60" rx="8" fill="url(#tGradient)"/>
+    <!-- Horizontal bar of T -->
+    <rect x="-40" y="-8" width="80" height="16" rx="8" fill="url(#tGradient)"/>
+  </g>
+  
+  <!-- GPS Dot in center -->
+  <circle cx="200" cy="100" r="8" fill="url(#signalGradient)"/>
+  
+  <!-- Signal dots around the T -->
+  <circle cx="120" cy="60" r="4" fill="url(#signalGradient)" opacity="0.8"/>
+  <circle cx="280" cy="60" r="4" fill="url(#signalGradient)" opacity="0.8"/>
+  <circle cx="120" cy="140" r="4" fill="url(#signalGradient)" opacity="0.8"/>
+  <circle cx="280" cy="140" r="4" fill="url(#signalGradient)" opacity="0.8"/>
+  
+  <!-- Additional GPS waypoints -->
+  <g transform="translate(500, 100)">
+    <circle cx="0" cy="0" r="30" fill="none" stroke="url(#signalGradient)" stroke-width="3" opacity="0.7"/>
+    <circle cx="0" cy="0" r="15" fill="none" stroke="url(#signalGradient)" stroke-width="2" opacity="0.9"/>
+    <circle cx="0" cy="0" r="5" fill="url(#signalGradient)"/>
+  </g>
+  
+  <!-- Signal strength bars -->
+  <g transform="translate(650, 80)">
+    <rect x="0" y="0" width="6" height="40" fill="url(#signalGradient)" opacity="0.8"/>
+    <rect x="10" y="8" width="6" height="32" fill="url(#signalGradient)" opacity="0.8"/>
+    <rect x="20" y="16" width="6" height="24" fill="url(#signalGradient)" opacity="0.8"/>
+    <rect x="30" y="24" width="6" height="16" fill="url(#signalGradient)" opacity="0.8"/>
+  </g>
+  
+  <!-- Title Text -->
+  <text x="400" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="white">
+    Trapii
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="400" y="195" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#e5e7eb">
+    GPS Traffic Monitoring &amp; Data Intelligence
+  </text>
+</svg> 

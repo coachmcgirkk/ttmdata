@@ -1,0 +1,90 @@
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100%;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Cluster circles: default plugin CSS supplies fill; add a visible ring */
+.leaflet-marker-icon.marker-cluster {
+  border: 2px solid rgba(0, 0, 0, 0.45);
+  box-sizing: border-box;
+}
+
+.leaflet-marker-icon.marker-cluster div {
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-sizing: border-box;
+}
+
+/* Chainage interval labels (1 km, 500 m, 250 m, 100 m) */
+.leaflet-marker-icon.chainage-interval-marker-leaflet {
+  background: transparent;
+  border: none;
+}
+
+.chainage-interval-marker {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.chainage-interval-dot {
+  border-radius: 50%;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  flex-shrink: 0;
+  pointer-events: auto;
+}
+
+.chainage-interval-dot--1km {
+  width: 10px;
+  height: 10px;
+  background: #dc2626;
+}
+
+.chainage-interval-dot--500m {
+  width: 8px;
+  height: 8px;
+  background: #16a34a;
+}
+
+.chainage-interval-dot--100m {
+  width: 7px;
+  height: 7px;
+  background: #2563eb;
+}
+
+.chainage-interval-marker--dot-only {
+  gap: 0;
+}
+
+.chainage-interval-label {
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  pointer-events: auto;
+}
