@@ -10,6 +10,7 @@ import {
   ResponsiveContainer
 } from "recharts";
 import { HOURLY_DAY_COLORS } from "../colorPalette";
+import { HOURLY_DAY_SHORT } from "../hourlyVolumeConstants";
 import { downloadCsv, rowsToCsv, safeFilenamePart } from "../csvExport";
 import ExportCsvButton from "../components/ExportCsvButton";
 import HourlyDirectionToggle from "../components/HourlyDirectionToggle";
@@ -99,11 +100,13 @@ const NswHourlyChart = memo(function NswHourlyChart({
           stroke={textPrimary}
           tick={{ fill: textPrimary, fontSize: 10 }}
           interval={2}
+          isAnimationActive={false}
         />
         <YAxis
           stroke={textPrimary}
           tick={{ fill: textPrimary, fontSize: 11 }}
           tickFormatter={v => formatCount(v)}
+          isAnimationActive={false}
         />
         <Tooltip
           shared
@@ -237,6 +240,10 @@ function NswStationDetailPanel({
   }, []);
 
   const setPreset = useCallback(days => setEnabledDays(days), []);
+  const presetClass = keys =>
+    keys.length === enabledDays.length && keys.every(key => enabledDays.includes(key))
+      ? "hourly-seg-btn is-on"
+      : "hourly-seg-btn";
   const updateChartHover = useCallback(data => setChartHover(data), []);
 
   useEffect(() => {
@@ -261,7 +268,7 @@ function NswStationDetailPanel({
       return canBoth;
     }).map(value => ({
       value,
-      label: nswDirectionCaption(value, hourly?.profiles || [])
+      label: value === HOURLY_DIR_BOTH ? "Both" : value === HOURLY_DIR_WITH ? "With" : "Against"
     }));
   }, [nswHourlyGroups, hourly]);
 
@@ -602,71 +609,29 @@ function NswStationDetailPanel({
                   </select>
                 </label>
               ) : null}
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 8,
-                  marginBottom: 8,
-                  flexShrink: 0
-                }}
-              >
-                <span style={{ fontSize: "0.8rem", fontWeight: 600 }}>Hourly volume trends</span>
-                <div className="hourly-series-presets" style={{ marginBottom: 0 }}>
-                  <button
-                    type="button"
-                    className="nav-btn nav-btn-small"
-                    onClick={() => setPreset(["MON", "TUE", "WED", "THU", "FRI"])}
-                  >
-                    Weekdays
-                  </button>
-                  <button
-                    type="button"
-                    className="nav-btn nav-btn-small"
-                    onClick={() => setPreset(["SAT", "SUN"])}
-                  >
-                    Weekend
-                  </button>
-                  <button
-                    type="button"
-                    className="nav-btn nav-btn-small"
-                    onClick={() => setPreset(["WEEKDAY_AVERAGE", "WEEKEND_AVERAGE"])}
-                  >
-                    Averages
-                  </button>
-                  <button
-                    type="button"
-                    className="nav-btn nav-btn-small"
-                    onClick={() => setPreset([...NSW_HOURLY_DAY_KEYS])}
-                  >
-                    All
-                  </button>
-                  <button
-                    type="button"
-                    className="nav-btn nav-btn-small"
-                    onClick={() => setPreset([])}
-                  >
-                    None
-                  </button>
+              <div className="hourly-toolbar">
+                <div className="hourly-seg" role="group" aria-label="Which days">
+                  <button type="button" className={presetClass(["MON", "TUE", "WED", "THU", "FRI"])} onClick={() => setPreset(["MON", "TUE", "WED", "THU", "FRI"])}>Weekdays</button>
+                  <button type="button" className={presetClass(["SAT", "SUN"])} onClick={() => setPreset(["SAT", "SUN"])}>Weekend</button>
+                  <button type="button" className={presetClass(["WEEKDAY_AVERAGE", "WEEKEND_AVERAGE"])} onClick={() => setPreset(["WEEKDAY_AVERAGE", "WEEKEND_AVERAGE"])}>Averages</button>
                 </div>
-              </div>
-              <div className="hourly-series-toggles" style={{ maxHeight: 44, marginBottom: 8, flexShrink: 0 }}>
-                {NSW_HOURLY_DAY_KEYS.map(day => (
-                  <label key={day} className="hourly-series-toggle">
-                    <input
-                      type="checkbox"
-                      checked={enabledDays.includes(day)}
-                      onChange={() => toggleDay(day)}
-                    />
-                    <span
-                      className="hourly-series-swatch"
-                      style={{ background: HOURLY_DAY_COLORS[day] || "#64748b" }}
-                    />
-                    {NSW_HOURLY_DAY_LABELS[day]}
-                  </label>
-                ))}
+                <div className="hourly-days" role="group" aria-label="Days">
+                  {NSW_HOURLY_DAY_KEYS.map(day => {
+                    const on = enabledDays.includes(day);
+                    return (
+                      <button
+                        key={day}
+                        type="button"
+                        className={`hourly-day${on ? " is-on" : ""}`}
+                        aria-pressed={on}
+                        onClick={() => toggleDay(day)}
+                      >
+                        <span className="hourly-day-mark" style={{ background: HOURLY_DAY_COLORS[day] }} />
+                        {HOURLY_DAY_SHORT[day]}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
               <HourlyDirectionStrokeLegend groups={hourlyChartGroups} darkMode={darkMode} />
               {hourlyChartData.length && enabledDays.length ? (
@@ -701,49 +666,19 @@ function NswStationDetailPanel({
       </div>
       {tab === "hourly" && !hourlyLoading && hourly && hourlyChartData.length ? (
         <div className="chart-hover-extend">
-          <div
-            style={{
-              minHeight: 40,
-              padding: "8px 10px",
-              borderRadius: 8,
-              background: darkMode ? "#1a1d23" : "#f8fafc",
-              border: `1px solid ${darkMode ? "#3a3f4b" : "#e2e8f0"}`,
-              fontSize: "0.72rem",
-              lineHeight: 1.45
-            }}
-          >
+          <div className="hourly-hover" aria-live="polite">
             {chartHover?.entries?.length ? (
               <>
-                <div style={{ fontWeight: 700, color: textPrimary, marginBottom: 4 }}>
-                  Hour {chartHover.label}
-                </div>
+                <span className="hourly-hover-hour">Hour {chartHover.label}</span>
                 {chartHover.entries.map((entry, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                      color: textPrimary
-                    }}
-                  >
-                    <span
-                      style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: 2,
-                        flexShrink: 0,
-                        background: entry.color
-                      }}
-                    />
-                    <span>
-                      {entry.label}: {Number(entry.value).toLocaleString()}
-                    </span>
-                  </div>
+                  <span key={idx} className="hourly-hover-item">
+                    <span className="hourly-day-mark" style={{ background: entry.color }} />
+                    {entry.label} {Number(entry.value).toLocaleString()}
+                  </span>
                 ))}
               </>
             ) : (
-              <span style={{ color: textMuted }}>Hover the chart to see values for each hour</span>
+              <span className="hourly-hover-empty">Hover the chart for values</span>
             )}
           </div>
         </div>

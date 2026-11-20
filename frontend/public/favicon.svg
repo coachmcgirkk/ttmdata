@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 186 150" role="img" aria-label="Freeflow Consulting">
+  <defs>
+    <linearGradient id="ff" x1="22" y1="22" x2="164" y2="128" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0c6e78"/>
+      <stop offset="0.55" stop-color="#14908f"/>
+      <stop offset="1" stop-color="#2eb8b0"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(0,150) scale(0.1,-0.1)" fill="url(#ff)">
+    <path d="M385 1271 c-76 -19 -130 -67 -150 -135 -16 -53 -22 -300 -7 -294 5 2 40 39 79 83 117 133 76 120 377 123 l261 3 108 107 c59 59 107 110 107 114 0 10 -734 8 -775 -1z M1240 1117 l0 -157 -389 0 -389 0 -121 -127 -121 -128 0 -242 0 -243 155 0 155 0 0 223 c0 160 3 226 12 235 9 9 101 12 355 12 l342 0 3 -105 3 -105 198 197 197 198 -200 200 -200 200 0 -158z M765 586 c-40 -18 -73 -56 -85 -97 -6 -19 -10 -87 -10 -151 l0 -118 38 0 c35 0 48 11 227 190 l190 190 -165 0 c-115 -1 -174 -5 -195 -14z"/>
+  </g>
+</svg>

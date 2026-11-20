@@ -50,7 +50,12 @@ export function useBufferedViewportFetch({
   useEffect(() => {
     if (!enabled || !debouncedViewport) {
       controllerRef.current?.abort();
+      controllerRef.current = null;
       loadedRef.current = null;
+      if (preloadTimerRef.current) {
+        clearTimeout(preloadTimerRef.current);
+        preloadTimerRef.current = null;
+      }
       setPoints([]);
       setExtra(null);
       setLoading(false);
@@ -63,21 +68,30 @@ export function useBufferedViewportFetch({
     const comfortablyInside =
       inside && bboxContains(loaded.bbox, debouncedViewport, edgeRatio);
 
-    if (comfortablyInside) return undefined;
+    if (comfortablyInside) {
+      setLoading(false);
+      return undefined;
+    }
 
     const blocking = keyChanged || !loaded;
     const fetchBbox = blocking ? debouncedViewport : expandBbox(debouncedViewport, padRatio);
 
     controllerRef.current?.abort();
+    if (preloadTimerRef.current) {
+      clearTimeout(preloadTimerRef.current);
+      preloadTimerRef.current = null;
+    }
     const controller = new AbortController();
     controllerRef.current = controller;
+    let active = true;
 
     if (blocking) setLoading(true);
+    else setLoading(false);
 
     fetchPointsRef
       .current(fetchBbox, { signal: controller.signal })
       .then(result => {
-        if (controller.signal.aborted) return;
+        if (!active || controller.signal.aborted) return;
         const nextPoints = result?.points || [];
         const reservedBbox = blocking
           ? expandBbox(viewportRef.current || debouncedViewport, padRatio)
@@ -88,19 +102,17 @@ export function useBufferedViewportFetch({
         };
         setPoints(nextPoints);
         setExtra(result || null);
-        if (blocking) setLoading(false);
 
         if (blocking) {
           const padded = expandBbox(viewportRef.current || debouncedViewport, padRatio);
-          if (preloadTimerRef.current) clearTimeout(preloadTimerRef.current);
           preloadTimerRef.current = setTimeout(() => {
-            if (controllerRef.current !== controller) return;
+            if (!active || controllerRef.current !== controller) return;
             const preloadController = new AbortController();
             controllerRef.current = preloadController;
             fetchPointsRef
               .current(padded, { signal: preloadController.signal })
               .then(preloaded => {
-                if (preloadController.signal.aborted) return;
+                if (!active || preloadController.signal.aborted) return;
                 loadedRef.current = {
                   bbox: padded,
                   cacheKey: cacheKeyRef.current
@@ -109,23 +121,32 @@ export function useBufferedViewportFetch({
                 setExtra(preloaded || null);
               })
               .catch(err => {
-                if (err?.name !== "AbortError") console.error(err);
+                if (!active || preloadController.signal.aborted || err?.name === "AbortError") return;
+                console.error(err);
               });
           }, 40);
         }
       })
       .catch(err => {
-        if (err?.name === "AbortError" || controller.signal.aborted) return;
+        if (!active || controller.signal.aborted || err?.name === "AbortError") return;
+        console.error(err);
         if (blocking) {
           setPoints([]);
           setExtra({ error: true, message: err?.message || "Failed to load map data." });
-          setLoading(false);
           loadedRef.current = null;
         }
+      })
+      .finally(() => {
+        if (active && blocking) setLoading(false);
       });
 
     return () => {
+      active = false;
       controller.abort();
+      if (preloadTimerRef.current) {
+        clearTimeout(preloadTimerRef.current);
+        preloadTimerRef.current = null;
+      }
     };
   }, [cacheKey, debouncedViewport, edgeRatio, enabled, padRatio]);
 

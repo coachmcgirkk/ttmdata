@@ -1,14 +1,16 @@
 """Load Queensland average hourly traffic volumes (by day of week)."""
 import math
+from publish_notes import notes_for
 import os
 from functools import lru_cache
 
 import pandas as pd
 
 AADT_DIR = os.path.join(os.path.dirname(__file__), "data", "AADT")
-HOURLY_SOURCE = os.path.join(AADT_DIR, "qld-traffic-data-average-by-hour-by-day-2024.xlsx")
-HOURLY_CACHE_CSV = os.path.join(AADT_DIR, "qld-traffic-data-average-by-hour-by-day-2024.csv")
-HOURLY_SHEET = "2024 Avg Volumes"
+HOURLY_SOURCE = os.path.join(AADT_DIR, "qld-traffic-data-average-by-hour-by-day-2025.xlsx")
+HOURLY_CACHE_CSV = os.path.join(AADT_DIR, "qld-traffic-data-average-by-hour-by-day-2025.csv")
+HOURLY_SHEET = "2025 Avg Volumes"
+HOURLY_YEAR = 2025
 TRAFFIC_DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "traffic_data.csv")
 
 SEGMENT_BEARING_COLUMNS = {
@@ -89,6 +91,17 @@ def get_gazettal_bearing(site_id):
     return load_site_gazettal_bearings().get(int(site_id))
 
 
+def _normalize_hourly_columns(frame):
+    rename = {}
+    if "HOURS" not in frame.columns and "HOUR" in frame.columns:
+        rename["HOUR"] = "HOURS"
+    if "RSECT_ID" not in frame.columns and "ROAD_SECTION_ID" in frame.columns:
+        rename["ROAD_SECTION_ID"] = "RSECT_ID"
+    if "DISTRICT_ID" not in frame.columns and "DISTRICT" in frame.columns:
+        rename["DISTRICT"] = "DISTRICT_ID"
+    return frame.rename(columns=rename) if rename else frame
+
+
 @lru_cache(maxsize=1)
 def load_hourly_dataframe() -> pd.DataFrame:
     if not os.path.exists(HOURLY_SOURCE):
@@ -101,6 +114,8 @@ def load_hourly_dataframe() -> pd.DataFrame:
         df = pd.read_csv(HOURLY_CACHE_CSV)
     else:
         df = pd.read_excel(HOURLY_SOURCE, sheet_name=HOURLY_SHEET)
+    df = _normalize_hourly_columns(df)
+    if not use_cache:
         df.to_csv(HOURLY_CACHE_CSV, index=False)
     df["LATITUDE"] = pd.to_numeric(df["LATITUDE"], errors="coerce")
     df["LONGITUDE"] = pd.to_numeric(df["LONGITUDE"], errors="coerce")
@@ -114,7 +129,7 @@ def get_meta():
     return {
         "ready": True,
         "sourceFile": os.path.basename(HOURLY_SOURCE),
-        "year": 2024,
+        "year": HOURLY_YEAR,
         "siteCount": int(df["SITE_ID"].nunique()),
         "directions": DIRECTIONS,
         "days": DAY_COLUMNS,
@@ -133,6 +148,7 @@ def get_sites():
                 "LATITUDE": "first",
                 "LONGITUDE": "first",
                 "RSECT_ID": "first",
+                **({"DISTRICT_ID": "first"} if "DISTRICT_ID" in df.columns else {}),
             }
         )
         .dropna(subset=["LATITUDE", "LONGITUDE"])
@@ -145,6 +161,7 @@ def get_sites():
             "LATITUDE": "latitude",
             "LONGITUDE": "longitude",
             "RSECT_ID": "roadSectionId",
+            "DISTRICT_ID": "districtId",
         }
     ).to_dict(orient="records")
     bearings = load_site_gazettal_bearings()
@@ -152,6 +169,8 @@ def get_sites():
         bearing = bearings.get(int(record["siteId"]))
         if bearing is not None:
             record["gazettalBearing"] = round(bearing, 2)
+        record["publishNotes"] = notes_for(record.get("siteId"), record.get("districtId"))
+        record.pop("districtId", None)
     return records
 
 
@@ -191,5 +210,6 @@ def get_site_profile(site_id: int, direction=None):
         "longitude": float(info["LONGITUDE"]) if pd.notna(info["LONGITUDE"]) else None,
         "roadSectionId": info.get("RSECT_ID"),
         "gazettalBearing": get_gazettal_bearing(site_id),
+        "publishNotes": notes_for(site_id, info.get("DISTRICT_ID")),
         "profiles": profiles,
     }

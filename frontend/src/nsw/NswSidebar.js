@@ -1,5 +1,5 @@
 import React from "react";
-import MapOptionsPanel from "../components/MapOptionsPanel";
+import MapOptionsPanel, { DisclaimerPanel } from "../components/MapOptionsPanel";
 
 function NswSidebar({
   meta,
@@ -9,8 +9,6 @@ function NswSidebar({
   onDarkModeChange,
   showAerial,
   onShowAerialChange,
-  greyScale,
-  onGreyScaleChange,
   stationCount,
   selectedSummary
 }) {
@@ -127,9 +125,18 @@ function NswSidebar({
               onDarkModeChange={onDarkModeChange}
               showAerial={showAerial}
               onShowAerialChange={onShowAerialChange}
-              greyScale={greyScale}
-              onGreyScaleChange={onGreyScaleChange}
             />
+          </div>
+        </div>
+      </div>
+
+      <div className="nav-section">
+        <div className="nav-section-header">
+          <span className="nav-section-title">Disclaimer</span>
+        </div>
+        <div className="nav-section-content">
+          <div className="nav-section-body">
+            <DisclaimerPanel />
           </div>
         </div>
       </div>

@@ -42,8 +42,7 @@ function HourlyVolumesSidebar({ meta, state, onStateChange, gazettalBearing }) {
       </div>
 
       <div className="nav-disclaimer">
-        {meta.year} average hourly volumes ({meta.siteCount?.toLocaleString()} sites). Source:{" "}
-        {meta.sourceFile}
+        Data should be reviewed against the appropriate sources. Freeflow Consulting accepts no liability for its use.
       </div>
     </div>
   );

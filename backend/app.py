@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, send_file, request
 from collections import OrderedDict
 import pandas as pd
+from publish_notes import notes_for
 import io
 import os
 import json
@@ -78,7 +79,7 @@ CRASH_MAP_COLUMNS = [
 ]
 
 CHAINAGE_DIR = os.path.join(os.path.dirname(__file__), 'data', 'chainage')
-CHAINAGE_SOURCE_PATH = os.path.join(CHAINAGE_DIR, 'road-location-and-traffic-data_20260505.csv')
+CHAINAGE_SOURCE_PATH = os.path.join(CHAINAGE_DIR, 'road-location-and-traffic-data_20261026.csv')
 CHAINAGE_INDEX_PATH = os.path.join(CHAINAGE_DIR, 'chunks', 'index.json')
 CHAINAGE_COLUMNS = [
     'Road_Section_Id', 'Carriageway_Code', 'Tdist_Start',
@@ -215,14 +216,23 @@ def get_site_points():
 @app.route('/api/sites')
 def api_sites():
     site_points = get_site_points().replace({np.nan: None})
-    return jsonify(site_points.to_dict(orient='records'))
+    districts = df.groupby('SITE_ID')['DISTRICT_ID'].first()
+    records = site_points.to_dict(orient='records')
+    for record in records:
+        record['publishNotes'] = notes_for(record.get('SITE_ID'), districts.get(record.get('SITE_ID')))
+    return jsonify(records)
 
 @app.route('/api/site/<int:site_id>')
 def api_site(site_id):
     site_data = df[df['SITE_ID'] == site_id].replace({np.nan: None})
     if site_data.empty:
         return jsonify({'error': 'Site not found'}), 404
-    return jsonify(site_data.to_dict(orient='records'))
+    records = site_data.to_dict(orient='records')
+    district = records[0].get('DISTRICT_ID') if records else None
+    notes = notes_for(site_id, district)
+    for record in records:
+        record['publishNotes'] = notes
+    return jsonify(records)
 
 @app.route('/api/site/<int:site_id>/csv')
 def api_site_csv(site_id):

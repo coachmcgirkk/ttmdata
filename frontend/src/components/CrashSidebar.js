@@ -143,7 +143,7 @@ function CrashSidebar({ meta, filters, onChange, loading, resultInfo }) {
       </div>
 
       <div className="nav-disclaimer">
-        Source: Queensland crash locations ({meta.totalRecords.toLocaleString()} records).
+        Data should be reviewed against the appropriate sources. Freeflow Consulting accepts no liability for its use.
       </div>
     </div>
   );

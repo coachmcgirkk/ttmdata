@@ -1,125 +1,73 @@
-import React, { useState } from "react";
-import Modal from "react-modal";
+import React from "react";
 
-function MapOptionsPanel({ darkMode, onDarkModeChange, showAerial, onShowAerialChange, greyScale, onGreyScaleChange }) {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [datasourceText, setDatasourceText] = useState("");
-  const [recommendationLink, setRecommendationLink] = useState("");
-  const [recommendationStatus, setRecommendationStatus] = useState("");
+const DATA_SOURCES = [
+  {
+    label: "AADT",
+    href: "https://www.data.qld.gov.au/dataset/traffic-census-for-the-queensland-state-declared-road-network/resource/dd96f1cd-f7ee-4c00-b5bc-2eb4f0b16952"
+  },
+  {
+    label: "Hourly volumes",
+    href: "https://www.data.qld.gov.au/dataset/queensland-traffic-data-averaged-by-hour-of-day-and-day-of-week/resource/e10dd7b1-b521-4267-b946-66c2c1b98fd3"
+  },
+  {
+    label: "Crash data",
+    href: "https://www.data.qld.gov.au/dataset/crash-data-from-queensland-roads/resource/e88943c0-5968-4972-a15f-38e120d72ec0"
+  },
+  {
+    label: "Chainage",
+    href: "https://www.data.qld.gov.au/dataset/road-location-and-traffic-data/resource/daab3617-077f-450a-a1c0-57c26d8ba47c"
+  }
+];
 
-  const openDatasourceModal = async () => {
-    setModalOpen(true);
-    if (!datasourceText) {
-      try {
-        const res = await fetch("/api/datasources");
-        setDatasourceText(await res.text());
-      } catch {
-        setDatasourceText("Failed to load data sources.");
-      }
-    }
-  };
-
-  const submitRecommendation = async e => {
-    e.preventDefault();
-    if (!recommendationLink.trim()) return;
-    setRecommendationStatus("");
-    try {
-      const res = await fetch("/api/recommendation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ link: recommendationLink })
-      });
-      const data = await res.json();
-      if (data.success) {
-        setRecommendationStatus("Thank you! Link submitted.");
-        setRecommendationLink("");
-      } else {
-        setRecommendationStatus(data.error || "Failed to submit.");
-      }
-    } catch {
-      setRecommendationStatus("Failed to submit.");
-    }
-  };
-
+function MapOptionsPanel({ darkMode, onDarkModeChange, showAerial, onShowAerialChange }) {
   return (
-    <>
-      <div className="nav-block">
-        <label className="nav-check">
-          <input
-            type="checkbox"
-            checked={showAerial}
-            onChange={e => onShowAerialChange(e.target.checked)}
-          />
-          Aerial imagery
-        </label>
-        <label className="nav-check">
-          <input
-            type="checkbox"
-            checked={greyScale}
-            onChange={e => onGreyScaleChange(e.target.checked)}
-          />
-          Grey Scale
-        </label>
-        <label className="nav-check">
-          <input
-            type="checkbox"
-            checked={darkMode}
-            onChange={e => onDarkModeChange(e.target.checked)}
-          />
-          Dark mode
-        </label>
-      </div>
-
-      <button type="button" className="nav-btn nav-btn-primary" onClick={openDatasourceModal}>
-        Data sources
-      </button>
-
-      <div className="nav-recommend">
-        <div className="nav-block-title">Have more data?</div>
-        <form onSubmit={submitRecommendation}>
-          <input
-            type="url"
-            className="nav-input"
-            placeholder="Paste link"
-            value={recommendationLink}
-            onChange={e => setRecommendationLink(e.target.value)}
-            required
-          />
-          <button type="submit" className="nav-btn nav-btn-accent">
-            Send
-          </button>
-          {recommendationStatus && (
-            <div
-              className={
-                recommendationStatus.startsWith("Thank") ? "nav-success" : "nav-error"
-              }
-            >
-              {recommendationStatus}
-            </div>
-          )}
-        </form>
-      </div>
-
-      <Modal
-        isOpen={modalOpen}
-        onRequestClose={() => setModalOpen(false)}
-        contentLabel="Data Sources"
-        style={{
-          overlay: { backgroundColor: "rgba(0,0,0,0.4)", zIndex: 2000 },
-          content: { maxWidth: 500, margin: "auto", borderRadius: 8, padding: 24, zIndex: 2100 }
-        }}
-      >
-        <h2>Data Sources</h2>
-        <pre className="nav-modal-pre">{datasourceText}</pre>
+    <div className="map-options">
+      <div className="map-options-appearance" role="group" aria-label="Light or dark">
         <button
           type="button"
-          className="nav-btn nav-btn-primary"
-          onClick={() => setModalOpen(false)}
+          className={`map-options-choice${!darkMode ? " is-on" : ""}`}
+          aria-pressed={!darkMode}
+          onClick={() => onDarkModeChange(false)}
         >
-          Close
+          Light
         </button>
-      </Modal>
-    </>
+        <button
+          type="button"
+          className={`map-options-choice${darkMode ? " is-on" : ""}`}
+          aria-pressed={darkMode}
+          onClick={() => onDarkModeChange(true)}
+        >
+          Dark
+        </button>
+      </div>
+      <label className="map-options-aerial">
+        <input
+          type="checkbox"
+          checked={showAerial}
+          onChange={e => onShowAerialChange(e.target.checked)}
+        />
+        Aerial
+      </label>
+    </div>
+  );
+}
+
+export function DisclaimerPanel() {
+  return (
+    <div className="nav-disclaimer-panel">
+      <p>
+        These layers are scraped from Queensland Government open data. Confirm a figure against the source before using it.
+      </p>
+      <ul>
+        {DATA_SOURCES.map(source => (
+          <li key={source.label}>
+            <a href={source.href} target="_blank" rel="noopener noreferrer">
+              {source.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 

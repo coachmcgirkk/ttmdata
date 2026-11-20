@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import PublishNotes from "./PublishNotes";
 import { MapContainer, Marker, Popup } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import "leaflet/dist/leaflet.css";
@@ -6,7 +7,6 @@ import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import L from "leaflet";
 import { useAadtMap } from "./context/AadtMapContext";
-import { HOURLY_MAP_MARKER_COLOR } from "./colorPalette";
 import { MapClearClick, MapController, MapViewportSync, ClosePopupOnDrag } from "./map/mapUtils";
 import MapBaseLayer from "./map/MapBaseLayer";
 import { GazettalDirectionArrows, GazettalDirectionLegend, popupOffsetForBearing } from "./map/gazettalArrows";
@@ -18,7 +18,8 @@ function HourlyVolumesView({
   showAerial,
   greyScale,
   selectedSiteId,
-  onSelectSite
+  onSelectSite,
+  recordYear
 }) {
   const { center, zoom, bounds, setMapViewport, clearBounds } = useAadtMap();
   const [sites, setSites] = useState([]);
@@ -53,9 +54,9 @@ function HourlyVolumesView({
 
   const hourlyIcon = new L.DivIcon({
     className: "",
-    html: `<div style="width:12px;height:12px;border-radius:50%;background:${HOURLY_MAP_MARKER_COLOR};border:2px solid #1e293b;box-shadow:0 1px 3px rgba(0,0,0,.35);"></div>`,
-    iconSize: [12, 12],
-    iconAnchor: [6, 6]
+    html: `<div style="width:18px;height:18px;box-sizing:border-box;border-radius:50%;background:#fbbf24;opacity:1;border:2px solid #111316;box-shadow:0 0 0 1px rgba(0,0,0,.55);"></div>`,
+    iconSize: [18, 18],
+    iconAnchor: [9, 9]
   });
 
   const selectedSite = useMemo(
@@ -106,9 +107,9 @@ function HourlyVolumesView({
                     selected
                       ? new L.DivIcon({
                           className: "",
-                          html: `<div style="width:14px;height:14px;border-radius:50%;background:${HOURLY_MAP_MARKER_COLOR};border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.5);"></div>`,
-                          iconSize: [14, 14],
-                          iconAnchor: [7, 7]
+                          html: `<div style="width:22px;height:22px;box-sizing:border-box;border-radius:50%;background:#ffffff;opacity:1;border:3px solid #111316;box-shadow:0 0 0 1px rgba(0,0,0,.65);"></div>`,
+                          iconSize: [22, 22],
+                          iconAnchor: [11, 11]
                         })
                       : hourlyIcon
                   }
@@ -120,11 +121,15 @@ function HourlyVolumesView({
                     autoPan={false}
                     closeButton
                   >
-                    <b>{site.roadName}</b>
+                    <b>
+                      {site.roadName}
+                      {recordYear ? ` · ${recordYear}` : ""}
+                    </b>
                     <br />
                     {site.description}
                     <br />
                     Site {site.siteId}
+                    <PublishNotes notes={site.publishNotes} />
                   </Popup>
                 </Marker>
               );

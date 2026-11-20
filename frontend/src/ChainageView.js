@@ -142,6 +142,11 @@ function ChainageView({
   return (
     <div className={`map-view-root${loading ? " is-loading" : ""}`}>
       <MapLoadingOverlay show={loading} label="Loading chainage…" />
+      {state.showOnMap && !loading && (bbox?.zoom ?? zoom) < minZoom ? (
+        <div className="chainage-zoom-hint" role="status">
+          Zoom in slightly to view chainage markers
+        </div>
+      ) : null}
       <MapContainer
         center={center}
         zoom={zoom}

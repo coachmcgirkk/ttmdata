@@ -10,12 +10,11 @@ import CrashDetailPanel from "./CrashDetailPanel";
 import ChainageView from "./ChainageView";
 import ChainageDetailPanel from "./ChainageDetailPanel";
 import PlanningView from "./PlanningView";
-import PlanningDetailPanel from "./PlanningDetailPanel";
+import { createInitialPlanning } from "./planningModel";
 import HourlyVolumesView from "./HourlyVolumesView";
 import HourlyVolumesDetailPanel from "./HourlyVolumesDetailPanel";
 import MapLoadingOverlay from "./components/MapLoadingOverlay";
 import { DEFAULT_ENABLED_HOURLY_DAYS } from "./hourlyVolumeConstants";
-import { createWorkArea } from "./planningUtils";
 import "./App.css";
 
 const defaultHourlyState = {
@@ -55,9 +54,8 @@ function App() {
   const [hourlyGazettalBearing, setHourlyGazettalBearing] = useState(null);
   const [selectedCrash, setSelectedCrash] = useState(null);
   const [selectedChainagePoint, setSelectedChainagePoint] = useState(null);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const [showAerial, setShowAerial] = useState(false);
-  const [greyScale, setGreyScale] = useState(false);
 
   const [crashMeta, setCrashMeta] = useState(null);
   const [crashFilters, setCrashFilters] = useState(null);
@@ -65,23 +63,9 @@ function App() {
   const [crashResultInfo, setCrashResultInfo] = useState(null);
   const [chainageMeta, setChainageMeta] = useState(null);
   const [chainageState, setChainageState] = useState({ showOnMap: false, markerSize: 3 });
+  const [planningState, setPlanningState] = useState(createInitialPlanning);
   const [chainageLoading, setChainageLoading] = useState(false);
   const [chainageResultInfo, setChainageResultInfo] = useState(null);
-  const [planningState, setPlanningState] = useState({
-    showOnMap: false,
-    roadSectionId: "",
-    carriageway: "1",
-    roadDescription: "",
-    sectionChainageMin: null,
-    sectionChainageMax: null,
-    pickMode: null,
-    showChainage: false,
-    showWorkAreaTooltips: true,
-    mapFitToken: 0,
-    workAreas: [createWorkArea()]
-  });
-  const [planningLoading, setPlanningLoading] = useState(false);
-  const [planningResultInfo, setPlanningResultInfo] = useState(null);
   const [hourlyMeta, setHourlyMeta] = useState(null);
   const [hourlyState, setHourlyState] = useState(defaultHourlyState);
 
@@ -127,7 +111,7 @@ function App() {
       setPlanningState(prev => ({
         ...prev,
         showOnMap: key === "planning",
-        pickMode: key === "planning" ? prev.pickMode : null
+        pick: key === "planning" ? prev.pick : null
       }));
       if (!key) return;
 
@@ -217,28 +201,6 @@ function App() {
     [applyLayerSelection]
   );
 
-  const handlePlanningResult = useCallback(info => {
-    setPlanningLoading(Boolean(info?.loading));
-    if (info && !info.loading) {
-      setPlanningResultInfo(info);
-      setPlanningState(prev => {
-        const updates = {};
-        if (info.description && prev.roadDescription !== info.description) {
-          updates.roadDescription = info.description;
-        }
-        if (info.chainageMin != null && info.chainageMax != null) {
-          if (prev.sectionChainageMin !== info.chainageMin) {
-            updates.sectionChainageMin = info.chainageMin;
-          }
-          if (prev.sectionChainageMax !== info.chainageMax) {
-            updates.sectionChainageMax = info.chainageMax;
-          }
-        }
-        return Object.keys(updates).length ? { ...prev, ...updates } : prev;
-      });
-    }
-  }, []);
-
   const handleAadtEnabledChange = useCallback(
     enabled => {
       if (enabled) applyLayerSelection("aadt");
@@ -279,13 +241,18 @@ function App() {
         onSelectSite={setSelectedSite}
         showAerial={showAerial}
         onShowAerialChange={setShowAerial}
-        greyScale={greyScale}
-        onGreyScaleChange={setGreyScale}
+        greyScale={false}
         showMarkers={aadtEnabled}
         onShowMarkersChange={handleAadtEnabledChange}
       >
         <header className="app-header">
-          <h1>Traffic &amp; Crash Data Visualisation</h1>
+          <div className="brand">
+            <img className="brand-mark" src="/freeflow-logo.svg" alt="" width="36" height="29" />
+            <div className="brand-text">
+              <h1>TTM Data</h1>
+              <p className="brand-disclaimer">Data should be reviewed against the appropriate sources. Freeflow Consulting accepts no liability for its use.</p>
+            </div>
+          </div>
           <MapSearchBar />
           <Link className="nsw-region-link" to="/nsw">
             NSW traffic →
@@ -315,8 +282,6 @@ function App() {
             chainageResultInfo={chainageResultInfo}
             planningState={planningState}
             onPlanningStateChange={handlePlanningStateChange}
-            planningLoading={planningLoading}
-            planningResultInfo={planningResultInfo}
             hourlyMeta={hourlyMeta}
             hourlyState={hourlyState}
             onHourlyStateChange={handleHourlyStateChange}
@@ -324,8 +289,6 @@ function App() {
             darkMode={darkMode}
             showAerial={showAerial}
             onShowAerialChange={setShowAerial}
-            greyScale={greyScale}
-            onGreyScaleChange={setGreyScale}
             onDarkModeChange={setDarkMode}
           />
 
@@ -347,9 +310,10 @@ function App() {
                     state={hourlyState}
                     darkMode={darkMode}
                     showAerial={showAerial}
-                    greyScale={greyScale}
+                    greyScale={false}
                     selectedSiteId={selectedHourlySiteId}
                     onSelectSite={setSelectedHourlySiteId}
+                    recordYear={hourlyMeta?.year}
                   />
                 ) : hourlyMeta?.error ? (
                   <div className="map-placeholder">{hourlyMeta.error}</div>
@@ -374,6 +338,7 @@ function App() {
                     }
                     onGazettalBearingChange={setHourlyGazettalBearing}
                     darkMode={darkMode}
+                    recordYear={hourlyMeta?.year}
                   />
                 </aside>
               </div>
@@ -386,7 +351,7 @@ function App() {
                       filters={crashFilters}
                       darkMode={darkMode}
                       showAerial={showAerial}
-                      greyScale={greyScale}
+                      greyScale={false}
                       selectedCrash={selectedCrash}
                       onSelectCrash={setSelectedCrash}
                       onLoadResult={handleCrashLoadResult}
@@ -412,7 +377,7 @@ function App() {
                     <ChainageView
                       darkMode={darkMode}
                       showAerial={showAerial}
-                      greyScale={greyScale}
+                      greyScale={false}
                       state={chainageState}
                       meta={chainageMeta}
                       onResultChange={handleChainageResult}
@@ -429,22 +394,16 @@ function App() {
                 </aside>
               </>
             ) : activeView === "planning" ? (
-              <>
-                <div className="map-area">
-                  <PlanningView
-                    darkMode={darkMode}
-                    showAerial={showAerial}
-                    greyScale={greyScale}
-                    state={planningState}
-                    chainageMeta={chainageMeta}
-                    onStateChange={handlePlanningStateChange}
-                    onResultChange={handlePlanningResult}
-                  />
-                </div>
-                <aside className="site-panel" aria-label="Planning analysis">
-                  <PlanningDetailPanel state={planningState} darkMode={darkMode} />
-                </aside>
-              </>
+              <div className="map-area">
+                <PlanningView
+                  darkMode={darkMode}
+                  showAerial={showAerial}
+                  greyScale={false}
+                  state={planningState}
+                  meta={chainageMeta}
+                  onStateChange={handlePlanningStateChange}
+                />
+              </div>
             ) : (
               <div className="map-placeholder">Select a view from the navigation panel.</div>
             )}

@@ -8,7 +8,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parent
 CHAINAGE_DIR = ROOT / "data" / "chainage"
-SOURCE_CSV = CHAINAGE_DIR / "road-location-and-traffic-data_20260505.csv"
+SOURCE_CSV = CHAINAGE_DIR / "road-location-and-traffic-data_20261026.csv"
 CHUNKS_DIR = CHAINAGE_DIR / "chunks"
 INDEX_PATH = CHUNKS_DIR / "index.json"
 

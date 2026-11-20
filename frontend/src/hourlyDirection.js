@@ -22,6 +22,16 @@ export function qldDirectionCaption(direction, bearing) {
   return bound ? `${base} (${bound})` : base;
 }
 
+export function hourlySegmentLabel(direction, bearing) {
+  if (direction === HOURLY_DIR_BOTH) return "Both";
+  const isWith = direction === HOURLY_DIR_WITH || direction === "GAZETTAL";
+  const bound = bearingToBoundLabel(
+    isWith || bearing == null ? bearing : (Number(bearing) + 180) % 360
+  );
+  const base = isWith ? "With" : "Against";
+  return bound ? `${base} (${bound})` : base;
+}
+
 export function nswCardinalBoundLabel(cardinal) {
   const value = String(cardinal || "").toUpperCase();
   if (value === "NORTH") return "Northbound";

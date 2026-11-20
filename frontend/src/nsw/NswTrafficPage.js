@@ -12,9 +12,8 @@ function NswTrafficPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedStationKey, setSelectedStationKey] = useState(null);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const [showAerial, setShowAerial] = useState(false);
-  const [greyScale, setGreyScale] = useState(false);
   const [center, setCenter] = useState([-33.87, 151.21]);
   const [zoom, setZoom] = useState(7);
   const [bounds, setBounds] = useState(null);
@@ -112,7 +111,13 @@ function NswTrafficPage() {
     <div className={`app-shell ${darkMode ? "app-shell-dark" : ""}`} style={appStyle}>
       <header className="app-header nsw-header">
         <div className="nsw-header-titles">
-          <h1>NSW Traffic Volumes</h1>
+          <div className="brand">
+            <img className="brand-mark" src="/freeflow-logo.svg" alt="" width="36" height="29" />
+            <div className="brand-text">
+              <h1>TTM Data</h1>
+              <p className="brand-disclaimer">Data should be reviewed against the appropriate sources. Freeflow Consulting accepts no liability for its use.</p>
+            </div>
+          </div>
           <p className="nsw-header-sub">
             TfNSW yearly AADT summary and hourly sample counts
           </p>
@@ -134,8 +139,6 @@ function NswTrafficPage() {
             onDarkModeChange={setDarkMode}
             showAerial={showAerial}
             onShowAerialChange={setShowAerial}
-            greyScale={greyScale}
-            onGreyScaleChange={setGreyScale}
             stationCount={visibleCount}
             selectedSummary={selectedSummary}
           />
@@ -146,7 +149,7 @@ function NswTrafficPage() {
                 loading={loading}
                 darkMode={darkMode}
                 showAerial={showAerial}
-                greyScale={greyScale}
+                greyScale={false}
                 center={center}
                 zoom={zoom}
                 bounds={bounds}

@@ -22,15 +22,15 @@ code {
     monospace;
 }
 
-/* Cluster circles: default plugin CSS supplies fill; add a visible ring */
+/* Cluster circles: a 40px halo around a 30px numbered core.
+   Use shadows for the rings so the halo stays centered on the number.
+   A border with border-box shrinks the halo and shifts it. */
 .leaflet-marker-icon.marker-cluster {
-  border: 2px solid rgba(0, 0, 0, 0.45);
-  box-sizing: border-box;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.45);
 }
 
 .leaflet-marker-icon.marker-cluster div {
-  border: 2px solid rgba(255, 255, 255, 0.85);
-  box-sizing: border-box;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.85);
 }
 
 /* Chainage interval labels (1 km, 500 m, 250 m, 100 m) */

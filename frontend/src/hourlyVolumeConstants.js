@@ -10,6 +10,18 @@ export const HOURLY_DAY_KEYS = [
   "WEEKEND_AVERAGE"
 ];
 
+export const HOURLY_DAY_SHORT = {
+  MON: "Mon",
+  TUE: "Tue",
+  WED: "Wed",
+  THU: "Thu",
+  FRI: "Fri",
+  SAT: "Sat",
+  SUN: "Sun",
+  WEEKDAY_AVERAGE: "Wkdy",
+  WEEKEND_AVERAGE: "Wknd"
+};
+
 export const HOURLY_DAY_LABELS = {
   MON: "Monday",
   TUE: "Tuesday",

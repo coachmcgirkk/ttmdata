@@ -1,28 +1,23 @@
 import React from "react";
 
-function HourlyDirectionToggle({
-  options,
-  value,
-  onChange,
-  name = "hourly-travel-direction"
-}) {
+function HourlyDirectionToggle({ options, value, onChange }) {
   if (!options?.length) return null;
   return (
-    <div className="hourly-direction-toggle" role="radiogroup" aria-label="Travel direction">
-      <span className="hourly-direction-toggle-title">Travel direction</span>
-      <div className="hourly-direction-toggle-options">
-        {options.map(option => (
-          <label key={option.value} className="hourly-direction-option">
-            <input
-              type="radio"
-              name={name}
-              checked={value === option.value}
-              onChange={() => onChange(option.value)}
-            />
+    <div className="hourly-seg" role="group" aria-label="Travel direction">
+      {options.map(option => {
+        const on = value === option.value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            className={`hourly-seg-btn${on ? " is-on" : ""}`}
+            aria-pressed={on}
+            onClick={() => onChange(option.value)}
+          >
             {option.label}
-          </label>
-        ))}
-      </div>
+          </button>
+        );
+      })}
     </div>
   );
 }

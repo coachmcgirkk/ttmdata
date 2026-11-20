@@ -1,4 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import PublishNotes from "./PublishNotes";
 import {
   ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from "recharts";
@@ -316,13 +317,28 @@ function SiteInfo({ siteId, darkMode, embedded = false }) {
   const [chartHover, setChartHover] = useState(null);
 
   useEffect(() => {
-    if (siteId) {
-      fetch(`/api/site/${siteId}`)
-        .then(res => res.json())
-        .then(setSiteData);
-    } else {
+    if (!siteId) {
       setSiteData([]);
+      return undefined;
     }
+    const controller = new AbortController();
+    let active = true;
+    fetch(`/api/site/${siteId}`, { signal: controller.signal })
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then(data => {
+        if (active) setSiteData(data);
+      })
+      .catch(err => {
+        if (!active || err?.name === "AbortError") return;
+        console.error(err);
+      });
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [siteId]);
 
   useEffect(() => {
@@ -538,6 +554,7 @@ function SiteInfo({ siteId, darkMode, embedded = false }) {
           <p style={{ margin: "4px 0 0", fontSize: embedded ? "0.78rem" : "0.9rem", opacity: 0.85 }}>
             Site {site.SITE_ID} · {site.DESCRIPTION}
           </p>
+          <PublishNotes notes={site.publishNotes} />
         </div>
         <ExportCsvButton onClick={handleExportCsv} darkMode={darkMode} />
       </div>

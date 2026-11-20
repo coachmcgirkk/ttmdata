@@ -1,4 +1,5 @@
 import React from "react";
+import PublishNotes from "./PublishNotes";
 import { MapContainer, Marker, Popup, Polyline } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import "leaflet/dist/leaflet.css";
@@ -128,6 +129,7 @@ function AadtMap() {
                       {site.DESCRIPTION}
                       <br />
                       <b>Speed Limit:</b> {speed} km/h
+                      <PublishNotes notes={site.publishNotes} />
                     </Popup>
                   </Marker>
                 );

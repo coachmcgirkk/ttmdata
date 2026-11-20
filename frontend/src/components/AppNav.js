@@ -4,7 +4,7 @@ import HourlyVolumesSidebar from "./HourlyVolumesSidebar";
 import CrashSidebar from "./CrashSidebar";
 import ChainageSidebar from "./ChainageSidebar";
 import PlanningSidebar from "./PlanningSidebar";
-import MapOptionsPanel from "./MapOptionsPanel";
+import MapOptionsPanel, { DisclaimerPanel } from "./MapOptionsPanel";
 
 function NavSection({ title, expanded, enabled, onToggleExpand, onToggleLayer, children }) {
   return (
@@ -70,8 +70,6 @@ function AppNav({
   chainageResultInfo,
   planningState,
   onPlanningStateChange,
-  planningLoading,
-  planningResultInfo,
   hourlyMeta,
   hourlyState,
   onHourlyStateChange,
@@ -79,8 +77,6 @@ function AppNav({
   darkMode,
   showAerial,
   onShowAerialChange,
-  greyScale,
-  onGreyScaleChange,
   onDarkModeChange
 }) {
   return (
@@ -159,8 +155,7 @@ function AppNav({
           <PlanningSidebar
             state={planningState}
             onStateChange={onPlanningStateChange}
-            loading={planningLoading}
-            resultInfo={planningResultInfo}
+            darkMode={darkMode}
           />
         )}
       </NavSection>
@@ -176,11 +171,20 @@ function AppNav({
             onDarkModeChange={onDarkModeChange}
             showAerial={showAerial}
             onShowAerialChange={onShowAerialChange}
-            greyScale={greyScale}
-            onGreyScaleChange={onGreyScaleChange}
           />
         </div>
       </NavPanelSection>
+
+      <div className="nav-section">
+        <div className="nav-section-header">
+          <span className="nav-section-title">Disclaimer</span>
+        </div>
+        <div className="nav-section-content">
+          <div className="nav-section-body">
+            <DisclaimerPanel />
+          </div>
+        </div>
+      </div>
     </nav>
   );
 }

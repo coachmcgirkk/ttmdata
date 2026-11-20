@@ -55,7 +55,7 @@ function AadtSidebar() {
       </div>
 
       <div className="nav-disclaimer">
-        Experimental project — verify all data before use.
+        Data should be reviewed against the appropriate sources. Freeflow Consulting accepts no liability for its use.
       </div>
     </div>
   );
